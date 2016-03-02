@@ -67,6 +67,7 @@
     <Compile Include="CreateSampleSeedInitializer.cs" />
     <Compile Include="SeedHelper.cs" />
     <Compile Include="Seeding\SeedingHelper.cs" />
+    <Compile Include="StudentRepository.cs" />
     <Compile Include="UnitOfWork.cs" />
   </ItemGroup>
   <ItemGroup>
