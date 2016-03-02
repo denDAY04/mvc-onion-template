@@ -13,8 +13,8 @@ namespace Infrastructure.DataAccess {
         public StudentRepository(ApplicationContext context) : base(context) {
         }
 
-        public IEnumerable<Student> GetTenHighestGpa() {
-            Expression<Func<Student, bool>> filter = s => s.Id > 0;
+        public IEnumerable<Student> GetThreeHighestGpa() {
+            Expression<Func<Student, bool>> filter = s => s.Id >= 0;
             Func<IQueryable<Student>, IOrderedQueryable<Student>> orderBy =
                 students => students.OrderByDescending(s => s.AverageGrade);
 

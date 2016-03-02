@@ -10,6 +10,6 @@ namespace Core.DomainServices {
         // Define any members specific for student access functionality
 
         // E.g.
-        IEnumerable<Student> GetTenHighestGpa();
+        IEnumerable<Student> GetThreeHighestGpa();
     }
 }
