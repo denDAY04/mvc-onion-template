@@ -74,6 +74,9 @@ namespace Presentation.Web.App_Start
             // Binding trick to avoid having to bind all usages of IGenericRepository. This binds them all!
             kernel.Bind(typeof(IGenericRepository<>)).To(typeof(GenericRepository<>));
 
+            // Model specific repositories
+            kernel.Bind<IStudentRepository>().To<StudentRepository>();
+
             // Identity
             kernel.Bind(typeof(IUserStore<>)).To(typeof(UserStore<>)).InRequestScope().WithConstructorArgument("context", kernel.Get<ApplicationContext>());
             kernel.Bind<IAuthenticationManager>().ToMethod(c => HttpContext.Current.GetOwinContext().Authentication).InRequestScope();
