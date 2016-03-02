@@ -9,7 +9,7 @@ namespace Infrastructure.DataAccess
 {
     public class UnitOfWork : IUnitOfWork, IDisposable
     {
-        private readonly DbContext _context;
+        private readonly ApplicationContext _context;
 
         public UnitOfWork(ApplicationContext context)
         {
