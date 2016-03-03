@@ -20,6 +20,8 @@ namespace Infrastructure.DataAccess
             _dbSet = context.Set<T>();
         }
 
+        public GenericRepository(Idb) 
+
         public IEnumerable<T> Get(
             Expression<Func<T, bool>> filter = null,
             Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
