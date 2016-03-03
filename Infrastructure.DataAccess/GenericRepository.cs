@@ -11,8 +11,8 @@ namespace Infrastructure.DataAccess
     public class GenericRepository<T> : IGenericRepository<T>
         where T : class
     {
-        private readonly ApplicationContext _context;
-        private readonly DbSet<T> _dbSet;
+        protected readonly ApplicationContext _context;
+        protected readonly DbSet<T> _dbSet;
 
         public GenericRepository(ApplicationContext context)
         {
