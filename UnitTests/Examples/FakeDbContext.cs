@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.Mvc;
@@ -21,13 +22,16 @@ namespace UnitTests.Examples
         // http://romiller.com/2012/02/14/testing-with-a-fake-dbcontext/
         // For replacing a database with a fake DbContext.
 
-        private readonly StudentController _controller;
-        private readonly IGenericRepository<Student> _repo;
+        private readonly StudentController _studentController;
+        private readonly IStudentRepository _studentRepository;
         private readonly IUnitOfWork _unitOfWork;
 
         // Usage of Faker.Net to generate random variables.
         private readonly string _studentName1 = Name.First();
         private readonly string _studentName2 = Name.First();
+        private readonly string _studentName3 = Name.First();
+        private readonly string _studentName4 = Name.First();
+
 
         /// <summary>
         /// Constructor for the test cases.
@@ -44,8 +48,10 @@ namespace UnitTests.Examples
             var substituteDbSet = Substitute.For<IDbSet<Student>>();
             var studentList = new List<Student>()
             {
-                new Student() {Id = 0, Name = _studentName1 },
-                new Student() {Id = 1, Name = _studentName2 }
+                new Student() {Id = 0, Name = _studentName1, AverageGrade = 5.0f},
+                new Student() {Id = 1, Name = _studentName2, AverageGrade = 2.9f},
+                new Student() {Id = 2, Name = _studentName3, AverageGrade = 3.1f},
+                new Student() {Id = 3, Name = _studentName4, AverageGrade = 4.5f}
             }.AsQueryable();
 
             // Setup for the substitute to behave like a DbSet.
@@ -55,14 +61,18 @@ namespace UnitTests.Examples
             substituteDbSet.GetEnumerator().Returns(studentList.GetEnumerator());
 
             // Substitute the repository.
-            _repo = Substitute.For<IGenericRepository<Student>>();
+            //_repo = Substitute.For<IGenericRepository<Student>>();
+            _studentRepository = Substitute.For<IStudentRepository>();
 
             // Set the AsQueryable to return the DbSet
             // You may need to set up other functions depending on the test case.
-            _repo.AsQueryable().Returns(substituteDbSet.AsQueryable());
+            _studentRepository.AsQueryable().Returns(substituteDbSet.AsQueryable());
 
             // A substitute for the UnitOfWork, used when saving context.
             _unitOfWork = Substitute.For<IUnitOfWork>();
+
+            // Link the UnitOfWork's model-specific repository to the mock version.
+            _unitOfWork.StudentRepository.Returns(_studentRepository);
 
             // Substitute for mailservice.
             var mailService = Substitute.For<IIdentityMessageService>();
@@ -71,7 +81,7 @@ namespace UnitTests.Examples
             var mailHandler = Substitute.For<IMailHandler>();
 
             // Pass the context to the controller, and use this for testing.
-            _controller = new StudentController(_unitOfWork, _repo, mailService, mailHandler);
+            _studentController = new StudentController(_unitOfWork, mailService, mailHandler);
 
             // The controller uses automapper.
             Mapper.CreateMap<NewStudentViewModel, Student>().ReverseMap();
@@ -82,10 +92,12 @@ namespace UnitTests.Examples
         {
             // Arrange
             // Act
-            var res = _controller.IndexStudentsByName();
+            var res = _studentController.IndexStudentsByName();
             // Assert
             Assert.True(res.FindIndex(d => d.Name == _studentName1) > -1);
             Assert.True(res.FindIndex(d => d.Name == _studentName2) > -1);
+            Assert.True(res.FindIndex(d => d.Name == _studentName3) > -1);
+            Assert.True(res.FindIndex(d => d.Name == _studentName4) > -1);
         }
 
         [Fact]
@@ -93,10 +105,12 @@ namespace UnitTests.Examples
         {
             // Arrange
             // Act
-            var res = _controller.IndexStudentsById();
+            var res = _studentController.IndexStudentsById();
             // Assert
             Assert.True(res[0].Id == 0);
             Assert.True(res[1].Id == 1);
+            Assert.True(res[2].Id == 2);
+            Assert.True(res[3].Id == 3);
         }
 
         [Fact]
@@ -105,9 +119,9 @@ namespace UnitTests.Examples
             // Arrange
             var model = new NewStudentViewModel() { Name = Name.First() };
             // Act
-            _controller.NewStudent(model);
+            _studentController.NewStudent(model);
             // Assert
-            _repo.Received().Insert(Arg.Any<Student>());
+            _studentRepository.Received().Insert(Arg.Any<Student>());
             _unitOfWork.Received().Save();
         }
 
@@ -118,10 +132,10 @@ namespace UnitTests.Examples
         {
             // Arrange
             // Act
-            var res = _controller.FindStudent(value);
+            var res = _studentController.FindStudent(value);
             // Assert
             Assert.NotNull(res);
-            _repo.Received().AsQueryable();
+            _studentRepository.Received().AsQueryable();
         }
 
         [Fact]
@@ -129,7 +143,7 @@ namespace UnitTests.Examples
         {
             // Arrange
             // Act
-            var res = _controller.FindStudent(null) as JsonResult;
+            var res = _studentController.FindStudent(null) as JsonResult;
             var data = res.Data as NewStudentViewModel;
             // Assert
             Assert.Equal("null", data.Name);
@@ -140,7 +154,7 @@ namespace UnitTests.Examples
         {
             // Arrange
             // Act
-            var res = _controller.FindStudent(5);
+            var res = _studentController.FindStudent(5);
             // Assert
             Assert.IsType<HttpNotFoundResult>(res);
         }
@@ -150,7 +164,7 @@ namespace UnitTests.Examples
         {
             // Arrange
             // Act
-            var res = _controller.Index() as ViewResult;
+            var res = _studentController.Index() as ViewResult;
             var viewModel = res.Model as IndexViewModel;
             var selectList = res.ViewBag.StudentIds;
             // Assert
@@ -167,7 +181,7 @@ namespace UnitTests.Examples
             // Arrange
 
             // Act
-            var res = _controller._Students(0) as PartialViewResult;
+            var res = _studentController._Students(0) as PartialViewResult;
             var viewModel = res.Model as IndexViewModel;
             var pagedData = viewModel.PagedStudents;
             // Assert
@@ -180,7 +194,7 @@ namespace UnitTests.Examples
         {
             // Arrange
             // Act
-            var res = _controller.NewStudent();
+            var res = _studentController.NewStudent();
             // Assert
             Assert.IsType<ViewResult>(res);
         }
@@ -190,7 +204,7 @@ namespace UnitTests.Examples
         {
             // Arrange
             // Act
-            var res = _controller.Mail();
+            var res = _studentController.Mail();
             // Assert
             Assert.IsType<ViewResult>(res);
         }
@@ -209,7 +223,7 @@ namespace UnitTests.Examples
                 Qux = ""
             };
             // Act
-            _controller.SendMail(model);
+            _studentController.SendMail(model);
             // Assert
 
             //_mailHandler.Received().GetMailMessage(model, Arg.Any<string>);
