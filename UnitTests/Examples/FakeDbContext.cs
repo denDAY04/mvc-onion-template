@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.Mvc;
@@ -61,7 +60,6 @@ namespace UnitTests.Examples
             substituteDbSet.GetEnumerator().Returns(studentList.GetEnumerator());
 
             // Substitute the repository.
-            //_repo = Substitute.For<IGenericRepository<Student>>();
             _studentRepository = Substitute.For<IStudentRepository>();
 
             // Set the AsQueryable to return the DbSet
