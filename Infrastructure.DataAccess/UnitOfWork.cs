@@ -11,7 +11,7 @@ namespace Infrastructure.DataAccess
     {
         private readonly ApplicationContext _context;
 
-        public IStudentRepository StudentRepository { get; set; }       
+        public IStudentRepository StudentRepository { get; }       
 
         public UnitOfWork(ApplicationContext context, IStudentRepository studentRepository)
         {
