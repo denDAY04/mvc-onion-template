@@ -14,11 +14,7 @@ namespace Infrastructure.DataAccess {
         }
 
         public IEnumerable<Student> GetThreeHighestGpa() {
-            Expression<Func<Student, bool>> filter = s => s.Id >= 0;
-            Func<IQueryable<Student>, IOrderedQueryable<Student>> orderBy =
-                students => students.OrderByDescending(s => s.AverageGrade);
-
-            return Get(filter, orderBy, "", 1, 10);
+            return Get(s => s.Id > 0, students => students.OrderByDescending(s => s.AverageGrade), "", 1, 3);
         }
     }
 }
