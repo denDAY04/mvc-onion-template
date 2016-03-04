@@ -17,6 +17,7 @@ namespace Presentation.Web.Controllers
         private readonly IIdentityMessageService _emailService;
         private readonly IMailHandler _mailHandler;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IStudentRepository _studentRepository;
 
         // Hardcoded pagingsize
         private const int PageSize = 3;
@@ -35,6 +36,7 @@ namespace Presentation.Web.Controllers
             _emailService = emailService;
             _mailHandler = mailHandler;
             _unitOfWork = unitOfWork;
+            _studentRepository = unitOfWork.StudentRepository;
         }
 
         public ActionResult Index()
@@ -44,7 +46,7 @@ namespace Presentation.Web.Controllers
             // We're putting the SelectListItems into a ViewBag, because we do not need to send it back.
             // We only send the selectedId back.
             // Example of a dropdown menu.
-            ViewBag.StudentIds = _unitOfWork.StudentRepository.AsQueryable().Select(s =>
+            ViewBag.StudentIds = _studentRepository.AsQueryable().Select(s =>
                 new SelectListItem()
                 {
                     Value = s.Id.ToString(),
@@ -58,7 +60,7 @@ namespace Presentation.Web.Controllers
                     new PagedData<NewStudentViewModel>()
                     {
                         // Always configure automapper into mapping viewmodels against domainmodels.
-                        Data = Mapper.Map<List<Student>, List<NewStudentViewModel>>(_unitOfWork.StudentRepository.AsQueryable().OrderBy(p => p.Name).Take(PageSize).ToList()).ToList(),
+                        Data = Mapper.Map<List<Student>, List<NewStudentViewModel>>(_studentRepository.AsQueryable().OrderBy(p => p.Name).Take(PageSize).ToList()).ToList(),
                         NumberOfPages = PagingsSizeHelper()
                     }
             };
@@ -67,7 +69,7 @@ namespace Presentation.Web.Controllers
 
         private int PagingsSizeHelper()
         {
-            return Convert.ToInt32(Math.Ceiling((double)_unitOfWork.StudentRepository.Count()/PageSize));
+            return Convert.ToInt32(Math.Ceiling((double)_studentRepository.Count()/PageSize));
         }
 
         public ActionResult _Students(int page)
@@ -77,7 +79,7 @@ namespace Presentation.Web.Controllers
                 PagedStudents = new PagedData<NewStudentViewModel>()
                 {
                     // Always configure automapper into mapping viewmodels against domainmodels.
-                    Data = Mapper.Map<List<Student>, List<NewStudentViewModel>>(_unitOfWork.StudentRepository.AsQueryable().OrderBy(p => p.Name).Skip(PageSize * (page - 1)).Take(PageSize).ToList()),
+                    Data = Mapper.Map<List<Student>, List<NewStudentViewModel>>(_studentRepository.AsQueryable().OrderBy(p => p.Name).Skip(PageSize * (page - 1)).Take(PageSize).ToList()),
                     NumberOfPages = PagingsSizeHelper()
                 }
             };
@@ -98,7 +100,7 @@ namespace Presentation.Web.Controllers
             var student = Mapper.Map<Student>(model);
             student.CreatedOn = DateTime.Now;
             student.ModifiedOn = DateTime.Now;
-            _unitOfWork.StudentRepository.Insert(student);
+            _studentRepository.Insert(student);
 
             _unitOfWork.Save();
             return View(model);
@@ -110,12 +112,12 @@ namespace Presentation.Web.Controllers
         /// <returns></returns>
         public List<NewStudentViewModel> IndexStudentsById()
         {
-            return Mapper.Map<List<Student>, List<NewStudentViewModel>>(_unitOfWork.StudentRepository.AsQueryable().OrderBy(p => p.Id).ToList());
+            return Mapper.Map<List<Student>, List<NewStudentViewModel>>(_studentRepository.AsQueryable().OrderBy(p => p.Id).ToList());
         }
 
         public List<NewStudentViewModel> IndexStudentsByName()
         {
-            return Mapper.Map<List<Student>, List<NewStudentViewModel>>(_unitOfWork.StudentRepository.AsQueryable().OrderBy(p => p.Name).ToList());
+            return Mapper.Map<List<Student>, List<NewStudentViewModel>>(_studentRepository.AsQueryable().OrderBy(p => p.Name).ToList());
         }
 
         /// <summary>
@@ -129,7 +131,7 @@ namespace Presentation.Web.Controllers
             if (id == null)
                 return Json(new NewStudentViewModel(){ Name = "null" }, JsonRequestBehavior.AllowGet);
 
-            var student = _unitOfWork.StudentRepository.AsQueryable().SingleOrDefault(x => x.Id == id);
+            var student = _studentRepository.AsQueryable().SingleOrDefault(x => x.Id == id);
 
             if (student == null)
                 return HttpNotFound();
@@ -155,6 +157,24 @@ namespace Presentation.Web.Controllers
 
             await _emailService.SendAsync(message);
             return Json("Ok", JsonRequestBehavior.AllowGet);
+        }
+
+        /// <summary>
+        /// Get the three students with the best GPA (Grade Point Average).
+        /// The result is returned in JSON notation. 
+        /// </summary>
+        /// <returns>A student view model encapsulating the result, in JSON.</returns>
+        public ActionResult FindTopThreeGpa() {
+            var students = _studentRepository.GetThreeHighestGpa().ToList();
+            var viewModel = new TopGpaViewModel() 
+            {
+                TopStudents = new PagedData<GpaStudentViewModel>() 
+                {
+                    NumberOfPages = (int) Math.Ceiling(students.Count() / (double) PageSize),
+                    Data = Mapper.Map<List<Student>, List<GpaStudentViewModel>>(students)
+                }
+            };
+            return Json(viewModel, JsonRequestBehavior.AllowGet);
         }
     }
 }

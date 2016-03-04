@@ -18,9 +18,7 @@ namespace Infrastructure.DataAccess
         {
             _context = context;
             _dbSet = context.Set<T>();
-        }
-
-        public GenericRepository(Idb) 
+        } 
 
         public IEnumerable<T> Get(
             Expression<Func<T, bool>> filter = null,

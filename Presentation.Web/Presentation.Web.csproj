@@ -206,6 +206,8 @@
     <Compile Include="Models\Student\PagedData.cs" />
     <Compile Include="Models\Account\RegisterViewModel.cs" />
     <Compile Include="Models\Student\MailViewModel.cs" />
+    <Compile Include="Models\Student\GpaStudentViewModel.cs" />
+    <Compile Include="Models\Student\TopGpaViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
     <Content Include="Content\bootstrap-theme.css" />

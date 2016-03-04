@@ -25,6 +25,7 @@ namespace Presentation.Web.App_Start
             // ViewModel Mappings
             Mapper.CreateMap<Student, NewStudentViewModel>().ReverseMap();
             Mapper.CreateMap<ApplicationUser, RegisterViewModel>().ReverseMap();
+            Mapper.CreateMap<Student, GpaStudentViewModel>().ReverseMap();
         }
     }
 }
