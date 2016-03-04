@@ -14,7 +14,10 @@ namespace Infrastructure.DataAccess {
         public StudentRepository(ApplicationContext context) : base(context) {}
         
         public IEnumerable<Student> GetThreeHighestGpa() {
-            return Get(s => s.Id > 0, students => students.OrderByDescending(s => s.AverageGrade), "", 1, 3);
+            // Handle query syntax within the repository; don't expose it 
+            // to the controllers that use the repository.
+            //return AsQueryable().OrderByDescending(s => s.AverageGrade).Take(3);
+            return Get(null, students => students.OrderByDescending(student => student.AverageGrade), "", 1, 3);
         }
     }
 }
