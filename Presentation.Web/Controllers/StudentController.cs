@@ -164,7 +164,8 @@ namespace Presentation.Web.Controllers
         /// The result is returned in JSON notation. 
         /// </summary>
         /// <returns>A student view model encapsulating the result, in JSON.</returns>
-        public ActionResult FindTopThreeGpa() {
+        public ActionResult FindTopThreeGpa() 
+        {
             var students = _studentRepository.GetThreeHighestGpa().ToList();
             var viewModel = new TopGpaViewModel() 
             {

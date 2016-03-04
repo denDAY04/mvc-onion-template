@@ -11,13 +11,13 @@ namespace Infrastructure.DataAccess
     public class GenericRepository<T> : IGenericRepository<T>
         where T : class
     {
-        protected readonly ApplicationContext _context;
-        protected readonly DbSet<T> _dbSet;
+        protected readonly ApplicationContext Context;
+        protected readonly DbSet<T> DbSet;
 
         public GenericRepository(ApplicationContext context)
         {
-            _context = context;
-            _dbSet = context.Set<T>();
+            Context = context;
+            DbSet = context.Set<T>();
         } 
 
         public IEnumerable<T> Get(
@@ -44,7 +44,7 @@ namespace Infrastructure.DataAccess
 
         private IQueryable<T> FilterLogic(Expression<Func<T, bool>> filter, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy, string includeProperties, int? page, int? pageSize)
         {
-            IQueryable<T> query = _dbSet;
+            IQueryable<T> query = DbSet;
 
             foreach (var includeProperty in includeProperties.Split
                 (new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
@@ -69,49 +69,49 @@ namespace Infrastructure.DataAccess
         // It's best practice to not rely on your ORM to implement IQueryable.
         public IQueryable<T> AsQueryable()
         {
-            return _dbSet.AsQueryable();
+            return DbSet.AsQueryable();
         }
 
         public T Create()
         {
-            var entity = _dbSet.Create<T>();
+            var entity = DbSet.Create<T>();
             return entity;
         }
 
         public T GetByKey(params object[] key)
         {
-            return _dbSet.Find(key);
+            return DbSet.Find(key);
         }
 
         public async Task<T> GetByKeyAsync(params object[] key)
         {
-            return await _dbSet.FindAsync(key);
+            return await DbSet.FindAsync(key);
         }
 
         public T Insert(T entity)
         {
-            return _dbSet.Add(entity);
+            return DbSet.Add(entity);
         }
 
         public void DeleteByKey(params object[] key)
         {
-            var entityToDelete = _dbSet.Find(key);
+            var entityToDelete = DbSet.Find(key);
 
-            if (_context.Entry(entityToDelete).State == EntityState.Detached)
-                _dbSet.Attach(entityToDelete);
+            if (Context.Entry(entityToDelete).State == EntityState.Detached)
+                DbSet.Attach(entityToDelete);
 
-            _dbSet.Remove(entityToDelete);
+            DbSet.Remove(entityToDelete);
         }
 
         public void Update(T entity)
         {
-            _dbSet.Attach(entity);
-            _context.Entry(entity).State = EntityState.Modified;
+            DbSet.Attach(entity);
+            Context.Entry(entity).State = EntityState.Modified;
         }
 
         public int Count(Expression<Func<T, bool>> filter = null)
         {
-            IQueryable<T> query = _dbSet;
+            IQueryable<T> query = DbSet;
 
             if (filter != null)
                 query = query.Where(filter);
@@ -121,7 +121,7 @@ namespace Infrastructure.DataAccess
 
         public async Task<int> CountAsync(Expression<Func<T, bool>> filter = null)
         {
-            IQueryable<T> query = _dbSet;
+            IQueryable<T> query = DbSet;
 
             if (filter != null)
                 query = query.Where(filter);
