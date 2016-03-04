@@ -23,10 +23,8 @@ namespace Presentation.Web.Controllers
         private const int PageSize = 3;
 
         /// <summary>
-        /// The constructor takes GenericRepositories as argument, which is automatically created by ninject in NinjectWebCommon.
-        /// This enables us to quickly get references to our context, by simply typing, for
-        /// example, "IGenericRepository<Course> courseRepository", which we can use right away.
-        /// Whenever a changes is made, use _unitOfWork.Save() to save any changes.
+        /// Repository references are retrieved from the unitOfWork.
+        /// Use _unitOfWork.Save() to save any changes made.
         /// </summary>
         /// <param name="unitOfWork"></param>
         /// <param name="emailService"></param>
